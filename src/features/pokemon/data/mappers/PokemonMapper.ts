@@ -1,8 +1,8 @@
 import { AppError } from '@core/errors/AppError';
-import type { Pokemon } from '../../domain/entities/Pokemon';
-import type { PokemonDetail } from '../../domain/entities/PokemonDetail';
-import type { PokemonDetailDto } from '../dto/PokemonDetailDto';
-import type { PokemonListItemDto } from '../dto/PokemonListDto';
+import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
+import type { PokemonDetail } from '@features/pokemon/domain/entities/PokemonDetail';
+import type { PokemonDetailDto } from '@features/pokemon/data/dto/PokemonDetailDto';
+import type { PokemonListItemDto } from '@features/pokemon/data/dto/PokemonListDto';
 
 const OFFICIAL_ARTWORK_BASE_URL =
   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork';

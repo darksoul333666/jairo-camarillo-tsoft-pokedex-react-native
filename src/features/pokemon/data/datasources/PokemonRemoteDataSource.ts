@@ -2,11 +2,11 @@ import { AppError } from '@core/errors/AppError';
 import {
   parsePokemonDetailDto,
   type PokemonDetailDto,
-} from '../dto/PokemonDetailDto';
+} from '@features/pokemon/data/dto/PokemonDetailDto';
 import {
   parsePokemonListDto,
   type PokemonListDto,
-} from '../dto/PokemonListDto';
+} from '@features/pokemon/data/dto/PokemonListDto';
 
 const POKE_API_BASE_URL = 'https://pokeapi.co/api/v2/';
 

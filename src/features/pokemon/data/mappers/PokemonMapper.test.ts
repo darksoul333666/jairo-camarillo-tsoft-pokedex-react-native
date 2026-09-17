@@ -4,7 +4,7 @@ import {
   officialArtworkUrl,
   PokemonMapper,
 } from './PokemonMapper';
-import type { PokemonDetailDto } from '../dto/PokemonDetailDto';
+import type { PokemonDetailDto } from '@features/pokemon/data/dto/PokemonDetailDto';
 
 describe('extractPokemonId', () => {
   it('reads the numeric id from a pokeapi resource url', () => {
