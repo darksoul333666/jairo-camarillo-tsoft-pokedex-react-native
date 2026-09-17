@@ -14,9 +14,7 @@ function App() {
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.container}>
-        <Text accessibilityRole="header" style={styles.title}>
-          Pokédex
-        </Text>
+        <Text style={styles.title}>Pokédex</Text>
       </View>
     </SafeAreaProvider>
   );
