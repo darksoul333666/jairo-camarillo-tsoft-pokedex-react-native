@@ -1,34 +1,34 @@
-import {
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { useMemo } from 'react';
+import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { createDependencies, type AppDependencies } from '@app/dependencies';
+import { AppNavigator } from '@app/navigation/AppNavigator';
 
-function App() {
+type Props = {
+  dependencies?: AppDependencies;
+};
+
+function App({ dependencies }: Props) {
   const isDarkMode = useColorScheme() === 'dark';
+  const deps = useMemo(
+    () => dependencies ?? createDependencies(),
+    [dependencies],
+  );
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <View style={styles.container}>
-        <Text style={styles.title}>Pokédex</Text>
-      </View>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <AppNavigator dependencies={deps} />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
   },
 });
 
