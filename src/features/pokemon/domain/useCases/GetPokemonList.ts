@@ -1,4 +1,4 @@
-import type { DataResult } from '../../../../core/types/DataResult';
+import type { DataResult } from '@core/types/DataResult';
 import type { Pokemon } from '../entities/Pokemon';
 import type { PokemonRepository } from '../repositories/PokemonRepository';
 
