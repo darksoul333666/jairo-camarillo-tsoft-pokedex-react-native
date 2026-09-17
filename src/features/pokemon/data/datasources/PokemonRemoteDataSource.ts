@@ -8,7 +8,7 @@ import {
   type PokemonListDto,
 } from '../dto/PokemonListDto';
 
-const POKE_API_BASE_URL = 'https://pokeapi.co/api/v2';
+const POKE_API_BASE_URL = 'https://pokeapi.co/api/v2/';
 
 export class PokemonRemoteDataSource {
   getPokemonList(offset: number, limit: number): Promise<PokemonListDto> {
@@ -18,12 +18,12 @@ export class PokemonRemoteDataSource {
     });
 
     return this.getJson(
-      `${POKE_API_BASE_URL}/pokemon?${params.toString()}`,
+      `${POKE_API_BASE_URL}pokemon?${params.toString()}`,
     ).then(parsePokemonListDto);
   }
 
   getPokemonDetail(id: number): Promise<PokemonDetailDto> {
-    return this.getJson(`${POKE_API_BASE_URL}/pokemon/${id}`).then(
+    return this.getJson(`${POKE_API_BASE_URL}pokemon/${id}`).then(
       parsePokemonDetailDto,
     );
   }
