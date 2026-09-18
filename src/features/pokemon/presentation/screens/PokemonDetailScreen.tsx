@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import {
-  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
 import type { GetPokemonDetail } from '@features/pokemon/domain/useCases/GetPokemonDetail';
 import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
 import { LoadingState } from '@features/pokemon/presentation/components/LoadingState';
+import { PokemonArtwork } from '@features/pokemon/presentation/components/PokemonArtwork';
 import {
   formatMeasurement,
   formatPokemonName,
@@ -94,15 +94,14 @@ export function PokemonDetailScreen({
           ]}
           accessibilityLiveRegion="polite"
         >
-          Showing saved data
+          Offline — showing saved data
         </Text>
       ) : null}
       <View style={[styles.hero, { backgroundColor: colors.surface }]}>
-        <Image
-          source={{ uri: pokemon.imageUrl }}
-          style={styles.image}
+        <PokemonArtwork
+          uri={pokemon.imageUrl}
+          size={180}
           accessibilityLabel={`${name} artwork`}
-          accessibilityIgnoresInvertColors
         />
         <Text style={[styles.id, { color: colors.muted }]}>#{pokemon.id}</Text>
         <Text
@@ -231,10 +230,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     padding: 20,
-  },
-  image: {
-    width: 180,
-    height: 180,
   },
   id: {
     marginTop: 8,

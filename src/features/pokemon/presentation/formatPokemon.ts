@@ -10,9 +10,21 @@ export function formatMeasurement(value: number): string {
   return `${(value / 10).toFixed(1)}`;
 }
 
+const STAT_LABELS: Record<string, string> = {
+  hp: 'HP',
+  attack: 'Attack',
+  defense: 'Defense',
+  'special-attack': 'Sp. Atk',
+  'special-defense': 'Sp. Def',
+  speed: 'Speed',
+};
+
 export function formatStatName(name: string): string {
-  return name
-    .split('-')
-    .map(part => formatPokemonName(part))
-    .join(' ');
+  return (
+    STAT_LABELS[name] ??
+    name
+      .split('-')
+      .map(part => formatPokemonName(part))
+      .join(' ')
+  );
 }

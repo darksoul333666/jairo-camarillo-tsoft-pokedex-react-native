@@ -36,11 +36,19 @@ function Probe({ getPokemonList }: { getPokemonList: GetPokemonList }) {
     state.status === 'loadMoreError'
       ? state.data.length
       : 0;
+  const offline =
+    state.status === 'success' ||
+    state.status === 'loadingMore' ||
+    state.status === 'refreshing' ||
+    state.status === 'loadMoreError'
+      ? state.offline
+      : false;
 
   return (
     <>
       <Text testID="status">{state.status}</Text>
       <Text testID="count">{String(count)}</Text>
+      <Text testID="offline">{String(offline)}</Text>
       <Pressable testID="loadMore" onPress={loadMore}>
         <Text>more</Text>
       </Pressable>
@@ -77,6 +85,9 @@ describe('usePokemonListViewModel', () => {
     expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
       '1',
     );
+    expect(
+      renderer?.root.findByProps({ testID: 'offline' }).props.children,
+    ).toBe('false');
   });
 
   it('marks empty when the list has no pokemon', async () => {
@@ -205,6 +216,42 @@ describe('usePokemonListViewModel', () => {
     );
   });
 
+  it('keeps the load-more error if a background refresh also fails', async () => {
+    const getPokemonList = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce(page([bulbasaur], true))
+        .mockRejectedValueOnce(
+          new AppError('Network', 'Could not reach PokéAPI.'),
+        )
+        .mockRejectedValueOnce(
+          new AppError('Network', 'Could not reach PokéAPI.'),
+        ),
+    } as unknown as GetPokemonList;
+
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <Probe getPokemonList={getPokemonList} />,
+      );
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'loadMore' }).props.onPress();
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'silentRefresh' }).props.onPress();
+    });
+
+    expect(
+      renderer?.root.findByProps({ testID: 'status' }).props.children,
+    ).toBe('loadMoreError');
+    expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
+      '1',
+    );
+  });
+
   it('reloads the first page without emptying the list', async () => {
     const getPokemonList = {
       execute: jest
@@ -273,5 +320,51 @@ describe('usePokemonListViewModel', () => {
     expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
       '1',
     );
+  });
+
+  it('marks the list offline when the first page comes from cache', async () => {
+    const getPokemonList = {
+      execute: jest.fn().mockResolvedValue(page([bulbasaur], true, 'cache')),
+    } as unknown as GetPokemonList;
+
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <Probe getPokemonList={getPokemonList} />,
+      );
+    });
+
+    expect(
+      renderer?.root.findByProps({ testID: 'offline' }).props.children,
+    ).toBe('true');
+  });
+
+  it('marks the list offline when a refresh fails and data stays on screen', async () => {
+    const getPokemonList = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce(page([bulbasaur], true))
+        .mockRejectedValueOnce(
+          new AppError('Network', 'Could not reach PokéAPI.'),
+        ),
+    } as unknown as GetPokemonList;
+
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <Probe getPokemonList={getPokemonList} />,
+      );
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'silentRefresh' }).props.onPress();
+    });
+
+    expect(
+      renderer?.root.findByProps({ testID: 'status' }).props.children,
+    ).toBe('success');
+    expect(
+      renderer?.root.findByProps({ testID: 'offline' }).props.children,
+    ).toBe('true');
   });
 });
