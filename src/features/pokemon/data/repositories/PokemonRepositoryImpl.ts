@@ -2,6 +2,7 @@ import { AppError } from '@core/errors/AppError';
 import type { DataResult } from '@core/types/DataResult';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import type { PokemonDetail } from '@features/pokemon/domain/entities/PokemonDetail';
+import type { PokemonListPage } from '@features/pokemon/domain/entities/PokemonListPage';
 import type { PokemonRepository } from '@features/pokemon/domain/repositories/PokemonRepository';
 import { PokemonMapper } from '@features/pokemon/data/mappers/PokemonMapper';
 import type { PokemonLocalDataSource } from '@features/pokemon/data/datasources/PokemonLocalDataSource';
@@ -16,18 +17,24 @@ export class PokemonRepositoryImpl implements PokemonRepository {
   async getPokemonList(
     offset: number,
     limit: number,
-  ): Promise<DataResult<Pokemon[]>> {
+  ): Promise<DataResult<PokemonListPage>> {
     try {
       const dto = await this.remoteDataSource.getPokemonList(offset, limit);
-      const data = PokemonMapper.toList(dto.results);
+      const items = PokemonMapper.toList(dto.results);
       await this.localDataSource
-        .savePokemonList(offset, limit, data)
+        .savePokemonList(offset, limit, items)
         .catch(() => undefined);
-      return { data, source: 'network' };
+      return {
+        data: { items, hasMore: dto.next !== null },
+        source: 'network',
+      };
     } catch (error) {
       const cached = await this.readListCache(offset, limit);
       if (cached !== null) {
-        return { data: cached, source: 'cache' };
+        return {
+          data: { items: cached, hasMore: cached.length >= limit },
+          source: 'cache',
+        };
       }
       throw toAppError(error, 'Could not load Pokemon list.');
     }

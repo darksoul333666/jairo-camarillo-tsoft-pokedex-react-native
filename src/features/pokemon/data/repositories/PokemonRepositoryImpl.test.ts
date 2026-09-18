@@ -91,10 +91,23 @@ describe('PokemonRepositoryImpl', () => {
     remote.getPokemonList.mockResolvedValue(listDto);
 
     await expect(repository.getPokemonList(0, 20)).resolves.toEqual({
-      data: mappedList,
+      data: { items: mappedList, hasMore: false },
       source: 'network',
     });
     expect(local.savePokemonList).toHaveBeenCalledWith(0, 20, mappedList);
+  });
+
+  it('marks hasMore when pokeapi returns a next page', async () => {
+    const { repository, remote } = createRepository();
+    remote.getPokemonList.mockResolvedValue({
+      ...listDto,
+      next: 'https://pokeapi.co/api/v2/pokemon?offset=20&limit=20',
+    });
+
+    await expect(repository.getPokemonList(0, 20)).resolves.toEqual({
+      data: { items: mappedList, hasMore: true },
+      source: 'network',
+    });
   });
 
   it('still returns network data if cache write fails', async () => {
@@ -103,7 +116,7 @@ describe('PokemonRepositoryImpl', () => {
     local.savePokemonList.mockRejectedValue(new Error('disk full'));
 
     await expect(repository.getPokemonList(0, 20)).resolves.toEqual({
-      data: mappedList,
+      data: { items: mappedList, hasMore: false },
       source: 'network',
     });
   });
@@ -116,7 +129,7 @@ describe('PokemonRepositoryImpl', () => {
     local.getPokemonList.mockResolvedValue(mappedList);
 
     await expect(repository.getPokemonList(0, 20)).resolves.toEqual({
-      data: mappedList,
+      data: { items: mappedList, hasMore: false },
       source: 'cache',
     });
   });
