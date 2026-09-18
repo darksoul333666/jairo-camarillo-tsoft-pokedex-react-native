@@ -21,7 +21,7 @@ yarn ios
 yarn android
 ```
 
-Si el clone es fresco, rebuild nativo. Metro no alcanza: hay AsyncStorage y React Navigation.
+Si el clone es fresco, rebuild nativo. Metro no alcanza: hay AsyncStorage y React Navigation. En iOS abre `PokemonApp.xcworkspace`, no el `.xcodeproj`. El `Podfile.lock` va en el repo.
 
 ```bash
 yarn typecheck
@@ -66,4 +66,4 @@ La lista de PokéAPI viene con `name` y `url`, sin artwork. El id sale de la url
 
 ## Falta
 
-Capturas de iOS y Android. Dark mode. Pull-to-refresh si sobra tiempo.
+Capturas de iOS y Android.
