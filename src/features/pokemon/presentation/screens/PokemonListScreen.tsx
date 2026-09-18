@@ -1,7 +1,14 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useCallback } from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  type ListRenderItem,
+} from 'react-native';
+import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import type { GetPokemonList } from '@features/pokemon/domain/useCases/GetPokemonList';
-import { EmptyState } from '@features/pokemon/presentation/components/EmptyState';
-import { ErrorState } from '@features/pokemon/presentation/components/ErrorState';
+import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
 import { LoadingState } from '@features/pokemon/presentation/components/LoadingState';
 import { PokemonCard } from '@features/pokemon/presentation/components/PokemonCard';
 import { usePokemonListViewModel } from '@features/pokemon/presentation/viewModels/usePokemonListViewModel';
@@ -14,16 +21,33 @@ type Props = {
 export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
   const { state, retry } = usePokemonListViewModel(getPokemonList);
 
+  const renderItem = useCallback<ListRenderItem<Pokemon>>(
+    ({ item }) => <PokemonCard pokemon={item} onPress={onSelectPokemon} />,
+    [onSelectPokemon],
+  );
+
   if (state.status === 'idle' || state.status === 'loading') {
     return <LoadingState message="Loading Pokémon" />;
   }
 
   if (state.status === 'error') {
-    return <ErrorState message={state.message} onRetry={retry} />;
+    return (
+      <FeedbackState
+        title="Could not load Pokémon"
+        message={state.message}
+        onRetry={retry}
+      />
+    );
   }
 
   if (state.status === 'empty') {
-    return <EmptyState message="No Pokémon found." onRetry={retry} />;
+    return (
+      <FeedbackState
+        title="Nothing here yet"
+        message="No Pokémon found."
+        onRetry={retry}
+      />
+    );
   }
 
   return (
@@ -36,9 +60,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
       <FlatList
         data={state.data}
         keyExtractor={item => String(item.id)}
-        renderItem={({ item }) => (
-          <PokemonCard pokemon={item} onPress={onSelectPokemon} />
-        )}
+        renderItem={renderItem}
         ItemSeparatorComponent={ListSeparator}
         contentContainerStyle={styles.list}
       />

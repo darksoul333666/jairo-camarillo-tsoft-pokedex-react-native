@@ -29,6 +29,7 @@ describe('PokemonRemoteDataSource', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://pokeapi.co/api/v2/pokemon?offset=0&limit=20',
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     expect(result.results).toHaveLength(1);
     expect(result.results[0]?.name).toBe('bulbasaur');
@@ -53,6 +54,25 @@ describe('PokemonRemoteDataSource', () => {
     await expect(dataSource.getPokemonDetail(1)).rejects.toMatchObject({
       name: 'AppError',
       code: 'Server',
+    });
+  });
+
+  it('maps a hung request to a network error', async () => {
+    const timedDataSource = new PokemonRemoteDataSource(20);
+    fetchMock.mockImplementation(
+      (_url: string, init?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            const error = new Error('Aborted');
+            error.name = 'AbortError';
+            reject(error);
+          });
+        }),
+    );
+
+    await expect(timedDataSource.getPokemonList(0, 20)).rejects.toMatchObject({
+      name: 'AppError',
+      code: 'Network',
     });
   });
 });

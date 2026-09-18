@@ -1,15 +1,16 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
+  title: string;
   message: string;
   onRetry: () => void;
 };
 
-export function EmptyState({ message, onRetry }: Props) {
+export function FeedbackState({ title, message, onRetry }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title} accessibilityRole="header">
-        Nothing here yet
+        {title}
       </Text>
       <Text style={styles.message}>{message}</Text>
       <Pressable
