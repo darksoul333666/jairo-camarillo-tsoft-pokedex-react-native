@@ -1,5 +1,4 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppColors } from '@features/pokemon/presentation/theme';
 
 type Props = {
@@ -9,7 +8,6 @@ type Props = {
 
 export function ScrollToTopFab({ visible, onPress }: Props) {
   const colors = useAppColors();
-  const insets = useSafeAreaInsets();
 
   if (!visible) {
     return null;
@@ -20,10 +18,7 @@ export function ScrollToTopFab({ visible, onPress }: Props) {
       onPress={onPress}
       style={({ pressed }) => [
         styles.fab,
-        {
-          backgroundColor: colors.accent,
-          bottom: Math.max(insets.bottom, 16) + 8,
-        },
+        { backgroundColor: colors.accent },
         pressed && styles.pressed,
       ]}
       accessibilityRole="button"
@@ -33,7 +28,7 @@ export function ScrollToTopFab({ visible, onPress }: Props) {
         style={[styles.icon, { color: colors.onAccent }]}
         accessible={false}
       >
-        ↑
+        Top
       </Text>
     </Pressable>
   );
@@ -41,25 +36,22 @@ export function ScrollToTopFab({ visible, onPress }: Props) {
 
 const styles = StyleSheet.create({
   fab: {
-    position: 'absolute',
-    right: 16,
-    minWidth: 48,
-    minHeight: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
   },
   pressed: {
     opacity: 0.85,
   },
   icon: {
-    fontSize: 22,
+    fontSize: 14,
     fontWeight: '700',
-    lineHeight: 26,
   },
 });

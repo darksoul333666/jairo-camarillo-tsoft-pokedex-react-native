@@ -42,4 +42,22 @@ describe('PokemonArtwork', () => {
     ).toBeTruthy();
     expect(renderer?.root.findAllByType(Image)).toHaveLength(0);
   });
+
+  it('treats a load that never succeeds as a missing image', async () => {
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <PokemonArtwork uri="https://example.com/1.png" size={56} />,
+      );
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByType(Image).props.onLoadEnd();
+    });
+
+    expect(renderer?.root.findAllByType(Image)).toHaveLength(0);
+    expect(
+      renderer?.root.findByProps({ testID: 'artwork-placeholder' }),
+    ).toBeTruthy();
+  });
 });
