@@ -14,6 +14,7 @@ export type PokemonListViewState =
       data: Pokemon[];
       source: DataSourceOrigin;
       hasMore: boolean;
+      offline: boolean;
     }
   | {
       status: 'loadMoreError';
@@ -21,6 +22,7 @@ export type PokemonListViewState =
       source: DataSourceOrigin;
       hasMore: true;
       message: string;
+      offline: boolean;
     };
 
 type LoadedListState = Extract<
@@ -63,6 +65,7 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
         data: result.data.items,
         source: result.source,
         hasMore: result.data.hasMore,
+        offline: result.source === 'cache',
       });
     } catch (error) {
       if (requestId !== requestIdRef.current) {
@@ -104,6 +107,7 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
           data: current.data,
           source: current.source,
           hasMore: current.status === 'loadMoreError' ? true : current.hasMore,
+          offline: current.offline,
         });
       }
 
@@ -124,13 +128,14 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
           data: result.data.items,
           source: result.source,
           hasMore: result.data.hasMore,
+          offline: result.source === 'cache',
         });
       } catch {
         if (requestId !== requestIdRef.current) {
           return;
         }
 
-        setState(current);
+        setState({ ...current, offline: true });
       } finally {
         if (requestId === requestIdRef.current) {
           inFlightRef.current = false;
@@ -154,6 +159,7 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
       data: current.data,
       source: current.source,
       hasMore: true,
+      offline: current.offline,
     });
 
     try {
@@ -166,11 +172,13 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
       }
 
       offsetRef.current += POKEMON_PAGE_SIZE;
+      const source = mergeSource(current.source, result.source);
       setState({
         status: 'success',
         data: mergeUniquePokemon(current.data, result.data.items),
-        source: mergeSource(current.source, result.source),
+        source,
         hasMore: result.data.hasMore,
+        offline: source === 'cache',
       });
     } catch (error) {
       if (requestId !== requestIdRef.current) {
@@ -183,6 +191,7 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
         source: current.source,
         hasMore: true,
         message: toUserMessage(error),
+        offline: true,
       });
     } finally {
       if (requestId === requestIdRef.current) {

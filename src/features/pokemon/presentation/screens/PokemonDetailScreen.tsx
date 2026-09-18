@@ -94,7 +94,7 @@ export function PokemonDetailScreen({
           ]}
           accessibilityLiveRegion="polite"
         >
-          Showing saved data
+          Offline — showing saved data
         </Text>
       ) : null}
       <View style={[styles.hero, { backgroundColor: colors.surface }]}>

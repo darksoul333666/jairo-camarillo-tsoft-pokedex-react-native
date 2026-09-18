@@ -13,7 +13,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import type { GetPokemonList } from '@features/pokemon/domain/useCases/GetPokemonList';
 import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
@@ -34,11 +34,10 @@ type Props = {
   onSelectPokemon: (pokemonId: number) => void;
 };
 
-const SCROLL_TOP_OFFSET = 160;
+const SCROLL_TOP_OFFSET = 400;
 
 export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
   const colors = useAppColors();
-  const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<Pokemon>>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const { state, retry, refresh, loadMore } =
@@ -87,6 +86,18 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
     };
   }, [refresh]);
 
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+
+      refresh({ silent: true });
+    }, [refresh]),
+  );
+
   if (state.status === 'loading') {
     return <LoadingState message="Loading Pokémon" />;
   }
@@ -112,11 +123,8 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
   }
 
   return (
-    <View
-      style={[styles.screen, { backgroundColor: colors.background }]}
-      pointerEvents="box-none"
-    >
-      {state.source === 'cache' ? (
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      {state.offline ? (
         <Text
           style={[
             styles.cacheNotice,
@@ -125,7 +133,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
           accessibilityRole="text"
           accessibilityLiveRegion="polite"
         >
-          Showing saved data
+          Offline — showing saved data
         </Text>
       ) : null}
       <FlatList
@@ -142,7 +150,6 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         onEndReachedThreshold={0.4}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        style={styles.listFlex}
         accessibilityRole="list"
         accessibilityLabel="Pokémon list"
         refreshControl={
@@ -155,16 +162,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         }
         contentContainerStyle={styles.list}
       />
-      <View
-        pointerEvents="box-none"
-        collapsable={false}
-        style={[
-          styles.fabLayer,
-          { paddingBottom: Math.max(insets.bottom, 16) },
-        ]}
-      >
-        <ScrollToTopFab visible={showScrollTop} onPress={scrollToTop} />
-      </View>
+      <ScrollToTopFab visible={showScrollTop} onPress={scrollToTop} />
     </View>
   );
 }
@@ -225,9 +223,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  listFlex: {
-    flex: 1,
-  },
   cacheNotice: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -235,14 +230,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
-  },
-  fabLayer: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    paddingRight: 16,
-    zIndex: 20,
-    elevation: 20,
+    paddingBottom: 88,
   },
   separator: {
     height: 8,
