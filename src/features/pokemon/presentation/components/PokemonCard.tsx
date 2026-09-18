@@ -1,6 +1,7 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { memo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
+import { PokemonArtwork } from '@features/pokemon/presentation/components/PokemonArtwork';
 import { formatPokemonName } from '@features/pokemon/presentation/formatPokemon';
 import { useAppColors } from '@features/pokemon/presentation/theme';
 
@@ -25,12 +26,7 @@ function PokemonListCard({ pokemon, onPress }: Props) {
       accessibilityLabel={`${name}, Pokémon number ${pokemon.id}`}
       accessibilityHint="Shows details"
     >
-      <Image
-        source={{ uri: pokemon.imageUrl }}
-        style={styles.image}
-        accessible={false}
-        accessibilityIgnoresInvertColors
-      />
+      <PokemonArtwork uri={pokemon.imageUrl} size={56} />
       <View style={styles.copy} accessible={false}>
         <Text style={[styles.id, { color: colors.muted }]}>#{pokemon.id}</Text>
         <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
@@ -53,10 +49,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.8,
-  },
-  image: {
-    width: 56,
-    height: 56,
   },
   copy: {
     flex: 1,
