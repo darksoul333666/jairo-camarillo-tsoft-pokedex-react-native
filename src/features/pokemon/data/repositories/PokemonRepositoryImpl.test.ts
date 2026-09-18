@@ -94,7 +94,10 @@ describe('PokemonRepositoryImpl', () => {
       data: { items: mappedList, hasMore: false },
       source: 'network',
     });
-    expect(local.savePokemonList).toHaveBeenCalledWith(0, 20, mappedList);
+    expect(local.savePokemonList).toHaveBeenCalledWith(0, 20, {
+      items: mappedList,
+      hasMore: false,
+    });
   });
 
   it('marks hasMore when pokeapi returns a next page', async () => {
@@ -126,10 +129,13 @@ describe('PokemonRepositoryImpl', () => {
     remote.getPokemonList.mockRejectedValue(
       new AppError('Network', 'Could not reach PokéAPI.'),
     );
-    local.getPokemonList.mockResolvedValue(mappedList);
+    local.getPokemonList.mockResolvedValue({
+      items: mappedList,
+      hasMore: true,
+    });
 
     await expect(repository.getPokemonList(0, 20)).resolves.toEqual({
-      data: { items: mappedList, hasMore: false },
+      data: { items: mappedList, hasMore: true },
       source: 'cache',
     });
   });

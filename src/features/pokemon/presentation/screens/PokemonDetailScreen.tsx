@@ -1,5 +1,13 @@
 import type { ReactNode } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import {
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import type { GetPokemonDetail } from '@features/pokemon/domain/useCases/GetPokemonDetail';
 import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
 import { LoadingState } from '@features/pokemon/presentation/components/LoadingState';
@@ -17,14 +25,25 @@ import { usePokemonDetailViewModel } from '@features/pokemon/presentation/viewMo
 type Props = {
   pokemonId: number;
   getPokemonDetail: GetPokemonDetail;
+  onTitleChange?: (title: string) => void;
 };
 
-export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
+export function PokemonDetailScreen({
+  pokemonId,
+  getPokemonDetail,
+  onTitleChange,
+}: Props) {
   const colors = useAppColors();
-  const { state, retry } = usePokemonDetailViewModel(
+  const { state, retry, refresh } = usePokemonDetailViewModel(
     pokemonId,
     getPokemonDetail,
   );
+
+  useEffect(() => {
+    if (state.status === 'success' || state.status === 'refreshing') {
+      onTitleChange?.(formatPokemonName(state.data.name));
+    }
+  }, [onTitleChange, state]);
 
   if (state.status === 'idle' || state.status === 'loading') {
     return <LoadingState message="Loading Pokémon" />;
@@ -58,6 +77,14 @@ export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
       style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       accessibilityLabel={`${name} details`}
+      refreshControl={
+        <RefreshControl
+          refreshing={state.status === 'refreshing'}
+          onRefresh={refresh}
+          tintColor={colors.accent}
+          accessibilityLabel="Reload Pokémon"
+        />
+      }
     >
       {state.source === 'cache' ? (
         <Text
