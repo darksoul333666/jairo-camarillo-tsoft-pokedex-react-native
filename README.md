@@ -66,4 +66,4 @@ La lista de PokéAPI viene con `name` y `url`, sin artwork. El id sale de la url
 
 ## Falta
 
-Capturas de iOS y Android. Dark mode. Pull-to-refresh si sobra tiempo.
+Capturas de iOS y Android.

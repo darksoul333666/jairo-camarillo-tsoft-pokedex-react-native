@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAppColors } from '@features/pokemon/presentation/theme';
 
 type Props = {
   title: string;
@@ -7,19 +8,30 @@ type Props = {
 };
 
 export function FeedbackState({ title, message, onRetry }: Props) {
+  const colors = useAppColors();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title} accessibilityRole="header">
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text
+        style={[styles.title, { color: colors.text }]}
+        accessibilityRole="header"
+      >
         {title}
       </Text>
-      <Text style={styles.message}>{message}</Text>
+      <Text style={[styles.message, { color: colors.muted }]}>{message}</Text>
       <Pressable
         onPress={onRetry}
-        style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+        style={({ pressed }) => [
+          styles.button,
+          { backgroundColor: colors.accent },
+          pressed && styles.pressed,
+        ]}
         accessibilityRole="button"
         accessibilityLabel="Retry"
       >
-        <Text style={styles.buttonLabel}>Retry</Text>
+        <Text style={[styles.buttonLabel, { color: colors.onAccent }]}>
+          Retry
+        </Text>
       </Pressable>
     </View>
   );
@@ -36,12 +48,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#101828',
     textAlign: 'center',
   },
   message: {
     fontSize: 16,
-    color: '#475467',
     textAlign: 'center',
   },
   button: {
@@ -49,7 +59,6 @@ const styles = StyleSheet.create({
     minWidth: 120,
     paddingHorizontal: 20,
     borderRadius: 10,
-    backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -57,7 +66,6 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   buttonLabel: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

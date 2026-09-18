@@ -1,5 +1,10 @@
 import { useCallback } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { useColorScheme } from 'react-native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+} from '@react-navigation/native';
 import {
   createNativeStackNavigator,
   type NativeStackScreenProps,
@@ -18,8 +23,10 @@ type Props = {
 };
 
 export function AppNavigator({ dependencies }: Props) {
+  const scheme = useColorScheme();
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack.Navigator>
         <Stack.Screen name="PokemonList" options={{ title: 'Pokédex' }}>
           {props => (

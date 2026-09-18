@@ -10,7 +10,7 @@ export type PokemonListViewState =
   | { status: 'empty' }
   | { status: 'error'; message: string }
   | {
-      status: 'success' | 'loadingMore';
+      status: 'success' | 'loadingMore' | 'refreshing';
       data: Pokemon[];
       source: DataSourceOrigin;
       hasMore: boolean;
@@ -25,7 +25,7 @@ export type PokemonListViewState =
 
 type LoadedListState = Extract<
   PokemonListViewState,
-  { status: 'success' | 'loadingMore' | 'loadMoreError' }
+  { status: 'success' | 'loadingMore' | 'refreshing' | 'loadMoreError' }
 >;
 
 export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
@@ -76,6 +76,69 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
       }
     }
   }, [getPokemonList]);
+
+  const refresh = useCallback(async () => {
+    const current = stateRef.current;
+    const hasList =
+      current.status === 'success' ||
+      current.status === 'loadMoreError' ||
+      current.status === 'refreshing';
+
+    if (!hasList) {
+      await load();
+      return;
+    }
+
+    if (inFlightRef.current) {
+      return;
+    }
+
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    inFlightRef.current = true;
+    offsetRef.current = 0;
+    setState({
+      status: 'refreshing',
+      data: current.data,
+      source: current.source,
+      hasMore: current.status === 'loadMoreError' ? true : current.hasMore,
+    });
+
+    try {
+      const result = await getPokemonList.execute(0, POKEMON_PAGE_SIZE);
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      if (result.data.items.length === 0) {
+        setState({ status: 'empty' });
+        return;
+      }
+
+      offsetRef.current = POKEMON_PAGE_SIZE;
+      setState({
+        status: 'success',
+        data: result.data.items,
+        source: result.source,
+        hasMore: result.data.hasMore,
+      });
+    } catch {
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      setState({
+        status: 'success',
+        data: current.data,
+        source: current.source,
+        hasMore: current.status === 'loadMoreError' ? true : current.hasMore,
+      });
+    } finally {
+      if (requestId === requestIdRef.current) {
+        inFlightRef.current = false;
+      }
+    }
+  }, [getPokemonList, load]);
 
   const loadMore = useCallback(async () => {
     const current = stateRef.current;
@@ -132,7 +195,7 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
     load();
   }, [load]);
 
-  return { state, retry: load, loadMore };
+  return { state, retry: load, refresh, loadMore };
 }
 
 function canLoadMore(state: PokemonListViewState): state is LoadedListState {

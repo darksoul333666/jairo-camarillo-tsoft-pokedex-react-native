@@ -28,10 +28,11 @@ function page(
 }
 
 function Probe({ getPokemonList }: { getPokemonList: GetPokemonList }) {
-  const { state, loadMore } = usePokemonListViewModel(getPokemonList);
+  const { state, loadMore, refresh } = usePokemonListViewModel(getPokemonList);
   const count =
     state.status === 'success' ||
     state.status === 'loadingMore' ||
+    state.status === 'refreshing' ||
     state.status === 'loadMoreError'
       ? state.data.length
       : 0;
@@ -42,6 +43,9 @@ function Probe({ getPokemonList }: { getPokemonList: GetPokemonList }) {
       <Text testID="count">{String(count)}</Text>
       <Pressable testID="loadMore" onPress={loadMore}>
         <Text>more</Text>
+      </Pressable>
+      <Pressable testID="refresh" onPress={refresh}>
+        <Text>refresh</Text>
       </Pressable>
     </>
   );
@@ -190,6 +194,34 @@ describe('usePokemonListViewModel', () => {
     expect(
       renderer?.root.findByProps({ testID: 'status' }).props.children,
     ).toBe('loadMoreError');
+    expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
+      '1',
+    );
+  });
+
+  it('reloads the first page without emptying the list', async () => {
+    const getPokemonList = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce(page([bulbasaur], true))
+        .mockResolvedValueOnce(page([ivysaur], false)),
+    } as unknown as GetPokemonList;
+
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <Probe getPokemonList={getPokemonList} />,
+      );
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'refresh' }).props.onPress();
+    });
+
+    expect(getPokemonList.execute).toHaveBeenNthCalledWith(2, 0, 20);
+    expect(
+      renderer?.root.findByProps({ testID: 'status' }).props.children,
+    ).toBe('success');
     expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
       '1',
     );
