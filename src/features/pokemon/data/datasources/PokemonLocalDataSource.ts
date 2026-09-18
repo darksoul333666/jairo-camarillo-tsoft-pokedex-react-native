@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppError } from '@core/errors/AppError';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import type { PokemonDetail } from '@features/pokemon/domain/entities/PokemonDetail';
+import type { PokemonListPage } from '@features/pokemon/domain/entities/PokemonListPage';
 
 export function pokemonListCacheKey(offset: number, limit: number): string {
   return `pokemon:list:${offset}:${limit}`;
@@ -15,7 +16,7 @@ export class PokemonLocalDataSource {
   async getPokemonList(
     offset: number,
     limit: number,
-  ): Promise<Pokemon[] | null> {
+  ): Promise<PokemonListPage | null> {
     const raw = await this.read(pokemonListCacheKey(offset, limit));
     if (raw === null) {
       return null;
@@ -23,7 +24,7 @@ export class PokemonLocalDataSource {
 
     try {
       const parsed: unknown = JSON.parse(raw);
-      return parsePokemonList(parsed);
+      return parsePokemonListPage(parsed, limit);
     } catch {
       return null;
     }
@@ -32,9 +33,9 @@ export class PokemonLocalDataSource {
   async savePokemonList(
     offset: number,
     limit: number,
-    data: Pokemon[],
+    page: PokemonListPage,
   ): Promise<void> {
-    await this.write(pokemonListCacheKey(offset, limit), JSON.stringify(data));
+    await this.write(pokemonListCacheKey(offset, limit), JSON.stringify(page));
   }
 
   async getPokemonDetail(id: number): Promise<PokemonDetail | null> {
@@ -76,11 +77,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function parsePokemonList(value: unknown): Pokemon[] {
-  if (!Array.isArray(value)) {
-    throw new Error('invalid list');
+function parsePokemonListPage(value: unknown, limit: number): PokemonListPage {
+  if (Array.isArray(value)) {
+    const items = parsePokemonItems(value);
+    return { items, hasMore: items.length >= limit };
   }
 
+  if (
+    !isRecord(value) ||
+    typeof value.hasMore !== 'boolean' ||
+    !Array.isArray(value.items)
+  ) {
+    throw new Error('invalid list page');
+  }
+
+  return {
+    items: parsePokemonItems(value.items),
+    hasMore: value.hasMore,
+  };
+}
+
+function parsePokemonItems(value: unknown[]): Pokemon[] {
   return value.map(item => {
     if (
       !isRecord(item) ||

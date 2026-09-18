@@ -60,7 +60,7 @@ No metí Axios ni Redux. Con `fetch` y el estado del ViewModel alcanza.
 
 ## Cache e imágenes
 
-Network first. Keys `pokemon:list:<offset>:<limit>` y `pokemon:detail:<id>`. Si sirvo cache, la UI lo dice.
+Network first. Keys `pokemon:list:<offset>:<limit>` (`{items, hasMore}`) y `pokemon:detail:<id>`. Si sirvo cache, la UI lo dice.
 
 La lista de PokéAPI viene con `name` y `url`, sin artwork. El id sale de la url y con eso armo el Official Artwork, sin N+1 de detalle.
 

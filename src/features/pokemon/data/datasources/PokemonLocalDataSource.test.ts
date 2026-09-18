@@ -4,7 +4,7 @@ import {
   pokemonDetailCacheKey,
   pokemonListCacheKey,
 } from './PokemonLocalDataSource';
-import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
+import type { PokemonListPage } from '@features/pokemon/domain/entities/PokemonListPage';
 import type { PokemonDetail } from '@features/pokemon/domain/entities/PokemonDetail';
 
 jest.mock('@react-native-async-storage/async-storage', () => {
@@ -40,18 +40,58 @@ describe('PokemonLocalDataSource', () => {
     await expect(dataSource.getPokemonList(0, 20)).resolves.toBeNull();
   });
 
-  it('roundtrips a pokemon list', async () => {
-    const list: Pokemon[] = [
-      {
-        id: 1,
-        name: 'bulbasaur',
-        imageUrl: 'https://example.com/1.png',
-      },
-    ];
+  it('roundtrips a pokemon list page including hasMore', async () => {
+    const page: PokemonListPage = {
+      items: [
+        {
+          id: 1,
+          name: 'bulbasaur',
+          imageUrl: 'https://example.com/1.png',
+        },
+      ],
+      hasMore: true,
+    };
 
-    await dataSource.savePokemonList(0, 20, list);
+    await dataSource.savePokemonList(0, 20, page);
 
-    await expect(dataSource.getPokemonList(0, 20)).resolves.toEqual(list);
+    await expect(dataSource.getPokemonList(0, 20)).resolves.toEqual(page);
+  });
+
+  it('reads a legacy list array and infers hasMore from page size', async () => {
+    await AsyncStorage.setItem(
+      pokemonListCacheKey(0, 20),
+      JSON.stringify([
+        {
+          id: 1,
+          name: 'bulbasaur',
+          imageUrl: 'https://example.com/1.png',
+        },
+      ]),
+    );
+
+    await expect(dataSource.getPokemonList(0, 20)).resolves.toEqual({
+      items: [
+        {
+          id: 1,
+          name: 'bulbasaur',
+          imageUrl: 'https://example.com/1.png',
+        },
+      ],
+      hasMore: false,
+    });
+  });
+
+  it('keeps hasMore false even when the page is full', async () => {
+    const items = Array.from({ length: 20 }, (_, index) => ({
+      id: index + 1,
+      name: `p${index + 1}`,
+      imageUrl: `https://example.com/${index + 1}.png`,
+    }));
+    const page: PokemonListPage = { items, hasMore: false };
+
+    await dataSource.savePokemonList(0, 20, page);
+
+    await expect(dataSource.getPokemonList(0, 20)).resolves.toEqual(page);
   });
 
   it('roundtrips a pokemon detail', async () => {

@@ -82,11 +82,23 @@ type DetailRouteProps = NativeStackScreenProps<
   getPokemonDetail: GetPokemonDetail;
 };
 
-function PokemonDetailRoute({ route, getPokemonDetail }: DetailRouteProps) {
+function PokemonDetailRoute({
+  navigation,
+  route,
+  getPokemonDetail,
+}: DetailRouteProps) {
+  const onTitleChange = useCallback(
+    (title: string) => {
+      navigation.setOptions({ title });
+    },
+    [navigation],
+  );
+
   return (
     <PokemonDetailScreen
       pokemonId={route.params.pokemonId}
       getPokemonDetail={getPokemonDetail}
+      onTitleChange={onTitleChange}
     />
   );
 }

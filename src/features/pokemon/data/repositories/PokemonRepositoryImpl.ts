@@ -1,6 +1,5 @@
 import { AppError } from '@core/errors/AppError';
 import type { DataResult } from '@core/types/DataResult';
-import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import type { PokemonDetail } from '@features/pokemon/domain/entities/PokemonDetail';
 import type { PokemonListPage } from '@features/pokemon/domain/entities/PokemonListPage';
 import type { PokemonRepository } from '@features/pokemon/domain/repositories/PokemonRepository';
@@ -21,18 +20,19 @@ export class PokemonRepositoryImpl implements PokemonRepository {
     try {
       const dto = await this.remoteDataSource.getPokemonList(offset, limit);
       const items = PokemonMapper.toList(dto.results);
+      const data = { items, hasMore: dto.next !== null };
       await this.localDataSource
-        .savePokemonList(offset, limit, items)
+        .savePokemonList(offset, limit, data)
         .catch(() => undefined);
       return {
-        data: { items, hasMore: dto.next !== null },
+        data,
         source: 'network',
       };
     } catch (error) {
       const cached = await this.readListCache(offset, limit);
       if (cached !== null) {
         return {
-          data: { items: cached, hasMore: cached.length >= limit },
+          data: cached,
           source: 'cache',
         };
       }
@@ -58,7 +58,7 @@ export class PokemonRepositoryImpl implements PokemonRepository {
   private async readListCache(
     offset: number,
     limit: number,
-  ): Promise<Pokemon[] | null> {
+  ): Promise<PokemonListPage | null> {
     try {
       return await this.localDataSource.getPokemonList(offset, limit);
     } catch {
