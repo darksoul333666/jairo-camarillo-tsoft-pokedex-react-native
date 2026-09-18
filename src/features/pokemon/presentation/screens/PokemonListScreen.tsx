@@ -230,6 +230,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
+    paddingBottom: 88,
   },
   separator: {
     height: 8,

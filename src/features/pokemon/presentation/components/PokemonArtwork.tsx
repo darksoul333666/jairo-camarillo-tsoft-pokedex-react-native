@@ -38,6 +38,9 @@ export function PokemonArtwork({ uri, size, accessibilityLabel }: Props) {
           source={{ uri }}
           onLoad={() => setStatus('loaded')}
           onError={() => setStatus('error')}
+          onLoadEnd={() => {
+            setStatus(current => (current === 'loading' ? 'error' : current));
+          }}
           resizeMode="contain"
           style={[
             styles.image,
