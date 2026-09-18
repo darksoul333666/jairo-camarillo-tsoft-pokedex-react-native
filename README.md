@@ -31,6 +31,12 @@ yarn test
 
 Lo mismo corre en GitHub Actions contra `development` y `main`.
 
+El icono de iOS y Android sale de `assets/app-icon.png`. Para regenerar los launchers:
+
+```bash
+npx icon-set-creator create ./assets/app-icon.png
+```
+
 ## App
 
 La primera página son 20 Pokémon (`offset=0&limit=20`). Al final del `FlatList` pide la siguiente. No hay paginador 1-2-3: en el teléfono se usa mal, y el assessment admite carga incremental.
