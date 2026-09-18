@@ -9,6 +9,7 @@ export type AppColors = {
   onAccent: string;
   cacheBg: string;
   cacheText: string;
+  skeleton: string;
 };
 
 const light: AppColors = {
@@ -20,6 +21,7 @@ const light: AppColors = {
   onAccent: '#FFFFFF',
   cacheBg: '#FEF0C7',
   cacheText: '#B54708',
+  skeleton: '#E4E7EC',
 };
 
 const dark: AppColors = {
@@ -31,6 +33,7 @@ const dark: AppColors = {
   onAccent: '#0B1220',
   cacheBg: '#3F2A0F',
   cacheText: '#FEC84B',
+  skeleton: '#2A3038',
 };
 
 export function useAppColors(): AppColors {

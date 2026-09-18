@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   AppState,
@@ -10,6 +10,8 @@ import {
   View,
   type AppStateStatus,
   type ListRenderItem,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
@@ -17,6 +19,7 @@ import type { GetPokemonList } from '@features/pokemon/domain/useCases/GetPokemo
 import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
 import { LoadingState } from '@features/pokemon/presentation/components/LoadingState';
 import { PokemonCard } from '@features/pokemon/presentation/components/PokemonCard';
+import { ScrollToTopFab } from '@features/pokemon/presentation/components/ScrollToTopFab';
 import {
   useAppColors,
   type AppColors,
@@ -31,8 +34,12 @@ type Props = {
   onSelectPokemon: (pokemonId: number) => void;
 };
 
+const SCROLL_TOP_OFFSET = 400;
+
 export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
   const colors = useAppColors();
+  const listRef = useRef<FlatList<Pokemon>>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const { state, retry, refresh, loadMore } =
     usePokemonListViewModel(getPokemonList);
 
@@ -48,6 +55,18 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
 
     loadMore();
   }, [loadMore, state.status]);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const next = event.nativeEvent.contentOffset.y > SCROLL_TOP_OFFSET;
+      setShowScrollTop(visible => (visible === next ? visible : next));
+    },
+    [],
+  );
+
+  const scrollToTop = useCallback(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
 
   useEffect(() => {
     let previous = AppState.currentState;
@@ -118,6 +137,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         </Text>
       ) : null}
       <FlatList
+        ref={listRef}
         data={state.data}
         extraData={state.status}
         keyExtractor={item => String(item.id)}
@@ -128,6 +148,8 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         }
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         accessibilityRole="list"
         accessibilityLabel="Pokémon list"
         refreshControl={
@@ -140,6 +162,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         }
         contentContainerStyle={styles.list}
       />
+      <ScrollToTopFab visible={showScrollTop} onPress={scrollToTop} />
     </View>
   );
 }
