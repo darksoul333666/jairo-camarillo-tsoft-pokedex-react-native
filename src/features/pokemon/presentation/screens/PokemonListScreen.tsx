@@ -13,6 +13,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import type { GetPokemonList } from '@features/pokemon/domain/useCases/GetPokemonList';
 import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
@@ -85,6 +86,18 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
     };
   }, [refresh]);
 
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+
+      refresh({ silent: true });
+    }, [refresh]),
+  );
+
   if (state.status === 'loading') {
     return <LoadingState message="Loading Pokémon" />;
   }
@@ -111,7 +124,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      {state.source === 'cache' ? (
+      {state.offline ? (
         <Text
           style={[
             styles.cacheNotice,
@@ -120,7 +133,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
           accessibilityRole="text"
           accessibilityLiveRegion="polite"
         >
-          Showing saved data
+          Offline — showing saved data
         </Text>
       ) : null}
       <FlatList
