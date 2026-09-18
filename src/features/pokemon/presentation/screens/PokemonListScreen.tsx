@@ -41,12 +41,21 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
   );
 
   const handleEndReached = useCallback(() => {
+    if (state.status === 'loadMoreError') {
+      return;
+    }
+
     loadMore();
-  }, [loadMore]);
+  }, [loadMore, state.status]);
 
   useEffect(() => {
+    let previous = AppState.currentState;
     const onChange = (nextState: AppStateStatus) => {
-      if (nextState === 'active') {
+      const cameToForeground =
+        previous?.match(/inactive|background/) != null &&
+        nextState === 'active';
+      previous = nextState;
+      if (cameToForeground) {
         refresh({ silent: true });
       }
     };

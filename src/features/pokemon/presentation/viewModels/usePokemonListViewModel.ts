@@ -130,12 +130,7 @@ export function usePokemonListViewModel(getPokemonList: GetPokemonList) {
           return;
         }
 
-        setState({
-          status: 'success',
-          data: current.data,
-          source: current.source,
-          hasMore: current.status === 'loadMoreError' ? true : current.hasMore,
-        });
+        setState(current);
       } finally {
         if (requestId === requestIdRef.current) {
           inFlightRef.current = false;

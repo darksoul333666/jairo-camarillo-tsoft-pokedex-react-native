@@ -205,6 +205,42 @@ describe('usePokemonListViewModel', () => {
     );
   });
 
+  it('keeps the load-more error if a background refresh also fails', async () => {
+    const getPokemonList = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce(page([bulbasaur], true))
+        .mockRejectedValueOnce(
+          new AppError('Network', 'Could not reach PokéAPI.'),
+        )
+        .mockRejectedValueOnce(
+          new AppError('Network', 'Could not reach PokéAPI.'),
+        ),
+    } as unknown as GetPokemonList;
+
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <Probe getPokemonList={getPokemonList} />,
+      );
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'loadMore' }).props.onPress();
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'silentRefresh' }).props.onPress();
+    });
+
+    expect(
+      renderer?.root.findByProps({ testID: 'status' }).props.children,
+    ).toBe('loadMoreError');
+    expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
+      '1',
+    );
+  });
+
   it('reloads the first page without emptying the list', async () => {
     const getPokemonList = {
       execute: jest
