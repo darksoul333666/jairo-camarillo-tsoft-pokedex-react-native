@@ -1,7 +1,13 @@
+import { useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  type NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 import type { AppDependencies } from '@app/dependencies';
 import type { RootStackParamList } from '@app/navigation/routes';
+import type { GetPokemonDetail } from '@features/pokemon/domain/useCases/GetPokemonDetail';
+import type { GetPokemonList } from '@features/pokemon/domain/useCases/GetPokemonList';
 import { PokemonDetailScreen } from '@features/pokemon/presentation/screens/PokemonDetailScreen';
 import { PokemonListScreen } from '@features/pokemon/presentation/screens/PokemonListScreen';
 
@@ -17,11 +23,9 @@ export function AppNavigator({ dependencies }: Props) {
       <Stack.Navigator>
         <Stack.Screen name="PokemonList" options={{ title: 'Pokédex' }}>
           {props => (
-            <PokemonListScreen
+            <PokemonListRoute
+              {...props}
               getPokemonList={dependencies.getPokemonList}
-              onSelectPokemon={pokemonId =>
-                props.navigation.navigate('PokemonDetail', { pokemonId })
-              }
             />
           )}
         </Stack.Screen>
@@ -30,13 +34,52 @@ export function AppNavigator({ dependencies }: Props) {
           options={({ route }) => ({ title: `#${route.params.pokemonId}` })}
         >
           {props => (
-            <PokemonDetailScreen
-              pokemonId={props.route.params.pokemonId}
+            <PokemonDetailRoute
+              {...props}
               getPokemonDetail={dependencies.getPokemonDetail}
             />
           )}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+type ListRouteProps = NativeStackScreenProps<
+  RootStackParamList,
+  'PokemonList'
+> & {
+  getPokemonList: GetPokemonList;
+};
+
+function PokemonListRoute({ navigation, getPokemonList }: ListRouteProps) {
+  const onSelectPokemon = useCallback(
+    (pokemonId: number) => {
+      navigation.navigate('PokemonDetail', { pokemonId });
+    },
+    [navigation],
+  );
+
+  return (
+    <PokemonListScreen
+      getPokemonList={getPokemonList}
+      onSelectPokemon={onSelectPokemon}
+    />
+  );
+}
+
+type DetailRouteProps = NativeStackScreenProps<
+  RootStackParamList,
+  'PokemonDetail'
+> & {
+  getPokemonDetail: GetPokemonDetail;
+};
+
+function PokemonDetailRoute({ route, getPokemonDetail }: DetailRouteProps) {
+  return (
+    <PokemonDetailScreen
+      pokemonId={route.params.pokemonId}
+      getPokemonDetail={getPokemonDetail}
+    />
   );
 }
