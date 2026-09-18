@@ -8,6 +8,10 @@ import {
   formatPokemonName,
   formatStatName,
 } from '@features/pokemon/presentation/formatPokemon';
+import {
+  useAppColors,
+  type AppColors,
+} from '@features/pokemon/presentation/theme';
 import { usePokemonDetailViewModel } from '@features/pokemon/presentation/viewModels/usePokemonDetailViewModel';
 
 type Props = {
@@ -16,6 +20,7 @@ type Props = {
 };
 
 export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
+  const colors = useAppColors();
   const { state, retry } = usePokemonDetailViewModel(
     pokemonId,
     getPokemonDetail,
@@ -50,60 +55,80 @@ export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
 
   return (
     <ScrollView
-      style={styles.screen}
+      style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       accessibilityLabel={`${name} details`}
     >
       {state.source === 'cache' ? (
-        <Text style={styles.cacheNotice}>Showing saved data</Text>
+        <Text
+          style={[
+            styles.cacheNotice,
+            { color: colors.cacheText, backgroundColor: colors.cacheBg },
+          ]}
+        >
+          Showing saved data
+        </Text>
       ) : null}
-      <View style={styles.hero}>
+      <View style={[styles.hero, { backgroundColor: colors.surface }]}>
         <Image
           source={{ uri: pokemon.imageUrl }}
           style={styles.image}
           accessibilityLabel={`${name} artwork`}
         />
-        <Text style={styles.id}>#{pokemon.id}</Text>
-        <Text style={styles.name} accessibilityRole="header">
+        <Text style={[styles.id, { color: colors.muted }]}>#{pokemon.id}</Text>
+        <Text
+          style={[styles.name, { color: colors.text }]}
+          accessibilityRole="header"
+        >
           {name}
         </Text>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surface }]}>
         <InfoRow
           label="Height"
           value={`${formatMeasurement(pokemon.height)} m`}
+          colors={colors}
         />
         <InfoRow
           label="Weight"
           value={`${formatMeasurement(pokemon.weight)} kg`}
+          colors={colors}
         />
-        <InfoRow label="Base XP" value={String(pokemon.baseExperience)} />
+        <InfoRow
+          label="Base XP"
+          value={String(pokemon.baseExperience)}
+          colors={colors}
+        />
       </View>
 
-      <Section title="Types">
+      <Section title="Types" colors={colors}>
         {pokemon.types.map(type => (
-          <Text key={type.name} style={styles.chip}>
+          <Text key={type.name} style={[styles.chip, { color: colors.text }]}>
             {formatPokemonName(type.name)}
           </Text>
         ))}
       </Section>
 
-      <Section title="Abilities">
+      <Section title="Abilities" colors={colors}>
         {pokemon.abilities.map(ability => (
-          <Text key={ability.name} style={styles.body}>
+          <Text
+            key={ability.name}
+            style={[styles.body, { color: colors.text }]}
+          >
             {formatPokemonName(ability.name)}
             {ability.isHidden ? ' (hidden)' : ''}
           </Text>
         ))}
       </Section>
 
-      <Section title="Stats">
+      <Section title="Stats" colors={colors}>
         {pokemon.stats.map(stat => (
           <InfoRow
             key={stat.name}
             label={formatStatName(stat.name)}
             value={String(stat.value)}
+            colors={colors}
           />
         ))}
       </Section>
@@ -111,10 +136,21 @@ export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  children,
+  colors,
+}: {
+  title: string;
+  children: ReactNode;
+  colors: AppColors;
+}) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.sectionTitle} accessibilityRole="header">
+    <View style={[styles.card, { backgroundColor: colors.surface }]}>
+      <Text
+        style={[styles.sectionTitle, { color: colors.text }]}
+        accessibilityRole="header"
+      >
         {title}
       </Text>
       {children}
@@ -122,11 +158,19 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({
+  label,
+  value,
+  colors,
+}: {
+  label: string;
+  value: string;
+  colors: AppColors;
+}) {
   return (
     <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={[styles.label, { color: colors.muted }]}>{label}</Text>
+      <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
     </View>
   );
 }
@@ -134,7 +178,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F2F4F7',
   },
   content: {
     padding: 16,
@@ -145,13 +188,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
-    color: '#B54708',
-    backgroundColor: '#FEF0C7',
     borderRadius: 8,
   },
   hero: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
   },
@@ -162,15 +202,12 @@ const styles = StyleSheet.create({
   id: {
     marginTop: 8,
     fontSize: 14,
-    color: '#667085',
   },
   name: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#101828',
   },
   card: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     gap: 8,
@@ -178,16 +215,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#101828',
     marginBottom: 4,
   },
   chip: {
     fontSize: 16,
-    color: '#101828',
   },
   body: {
     fontSize: 16,
-    color: '#101828',
   },
   row: {
     minHeight: 28,
@@ -198,11 +232,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#667085',
   },
   value: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#101828',
   },
 });

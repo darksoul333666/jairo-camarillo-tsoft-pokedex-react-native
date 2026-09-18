@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -14,6 +15,10 @@ import { FeedbackState } from '@features/pokemon/presentation/components/Feedbac
 import { LoadingState } from '@features/pokemon/presentation/components/LoadingState';
 import { PokemonCard } from '@features/pokemon/presentation/components/PokemonCard';
 import {
+  useAppColors,
+  type AppColors,
+} from '@features/pokemon/presentation/theme';
+import {
   usePokemonListViewModel,
   type PokemonListViewState,
 } from '@features/pokemon/presentation/viewModels/usePokemonListViewModel';
@@ -24,7 +29,9 @@ type Props = {
 };
 
 export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
-  const { state, retry, loadMore } = usePokemonListViewModel(getPokemonList);
+  const colors = useAppColors();
+  const { state, retry, refresh, loadMore } =
+    usePokemonListViewModel(getPokemonList);
 
   const renderItem = useCallback<ListRenderItem<Pokemon>>(
     ({ item }) => <PokemonCard pokemon={item} onPress={onSelectPokemon} />,
@@ -60,9 +67,15 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
       {state.source === 'cache' ? (
-        <Text style={styles.cacheNotice} accessibilityRole="text">
+        <Text
+          style={[
+            styles.cacheNotice,
+            { color: colors.cacheText, backgroundColor: colors.cacheBg },
+          ]}
+          accessibilityRole="text"
+        >
           Showing saved data
         </Text>
       ) : null}
@@ -72,9 +85,18 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         keyExtractor={item => String(item.id)}
         renderItem={renderItem}
         ItemSeparatorComponent={ListSeparator}
-        ListFooterComponent={<ListFooter state={state} onRetry={loadMore} />}
+        ListFooterComponent={
+          <ListFooter state={state} onRetry={loadMore} colors={colors} />
+        }
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
+        refreshControl={
+          <RefreshControl
+            refreshing={state.status === 'refreshing'}
+            onRefresh={refresh}
+            tintColor={colors.accent}
+          />
+        }
         contentContainerStyle={styles.list}
       />
     </View>
@@ -84,9 +106,11 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
 function ListFooter({
   state,
   onRetry,
+  colors,
 }: {
   state: PokemonListViewState;
   onRetry: () => void;
+  colors: AppColors;
 }) {
   if (state.status === 'loadingMore') {
     return (
@@ -95,7 +119,7 @@ function ListFooter({
         accessibilityRole="progressbar"
         accessibilityLabel="Loading more Pokémon"
       >
-        <ActivityIndicator color="#2563EB" />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -103,17 +127,22 @@ function ListFooter({
   if (state.status === 'loadMoreError') {
     return (
       <View style={styles.footer}>
-        <Text style={styles.footerMessage}>{state.message}</Text>
+        <Text style={[styles.footerMessage, { color: colors.muted }]}>
+          {state.message}
+        </Text>
         <Pressable
           onPress={onRetry}
           style={({ pressed }) => [
             styles.footerButton,
+            { backgroundColor: colors.accent },
             pressed && styles.pressed,
           ]}
           accessibilityRole="button"
           accessibilityLabel="Retry"
         >
-          <Text style={styles.footerButtonLabel}>Retry</Text>
+          <Text style={[styles.footerButtonLabel, { color: colors.onAccent }]}>
+            Retry
+          </Text>
         </Pressable>
       </View>
     );
@@ -129,14 +158,11 @@ function ListSeparator() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F2F4F7',
   },
   cacheNotice: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     fontSize: 13,
-    color: '#B54708',
-    backgroundColor: '#FEF0C7',
   },
   list: {
     padding: 16,
@@ -154,7 +180,6 @@ const styles = StyleSheet.create({
   },
   footerMessage: {
     fontSize: 14,
-    color: '#475467',
     textAlign: 'center',
   },
   footerButton: {
@@ -162,7 +187,6 @@ const styles = StyleSheet.create({
     minWidth: 120,
     paddingHorizontal: 20,
     borderRadius: 10,
-    backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -170,7 +194,6 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   footerButtonLabel: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

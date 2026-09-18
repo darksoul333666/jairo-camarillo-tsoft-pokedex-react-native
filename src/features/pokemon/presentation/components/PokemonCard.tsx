@@ -2,6 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { memo } from 'react';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
 import { formatPokemonName } from '@features/pokemon/presentation/formatPokemon';
+import { useAppColors } from '@features/pokemon/presentation/theme';
 
 type Props = {
   pokemon: Pokemon;
@@ -9,12 +10,17 @@ type Props = {
 };
 
 function PokemonListCard({ pokemon, onPress }: Props) {
+  const colors = useAppColors();
   const name = formatPokemonName(pokemon.name);
 
   return (
     <Pressable
       onPress={() => onPress(pokemon.id)}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: colors.surface },
+        pressed && styles.pressed,
+      ]}
       accessibilityRole="button"
       accessibilityLabel={`${name}, Pokémon number ${pokemon.id}`}
     >
@@ -24,8 +30,8 @@ function PokemonListCard({ pokemon, onPress }: Props) {
         accessibilityIgnoresInvertColors
       />
       <View style={styles.copy}>
-        <Text style={styles.id}>#{pokemon.id}</Text>
-        <Text style={styles.name}>{name}</Text>
+        <Text style={[styles.id, { color: colors.muted }]}>#{pokemon.id}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
       </View>
     </Pressable>
   );
@@ -41,7 +47,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
   },
   pressed: {
@@ -56,11 +61,9 @@ const styles = StyleSheet.create({
   },
   id: {
     fontSize: 13,
-    color: '#667085',
   },
   name: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#101828',
   },
 });
