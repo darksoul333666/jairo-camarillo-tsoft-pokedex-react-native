@@ -13,9 +13,15 @@ export function LoadingState({ message }: Props) {
       style={[styles.container, { backgroundColor: colors.background }]}
       accessibilityRole="progressbar"
       accessibilityLabel={message}
+      accessibilityState={{ busy: true }}
     >
       <ActivityIndicator size="large" color={colors.accent} />
-      <Text style={[styles.message, { color: colors.muted }]}>{message}</Text>
+      <Text
+        style={[styles.message, { color: colors.muted }]}
+        accessible={false}
+      >
+        {message}
+      </Text>
     </View>
   );
 }
