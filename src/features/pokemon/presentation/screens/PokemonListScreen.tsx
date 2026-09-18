@@ -1,12 +1,14 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   FlatList,
   Pressable,
   RefreshControl,
   StyleSheet,
   Text,
   View,
+  type AppStateStatus,
   type ListRenderItem,
 } from 'react-native';
 import type { Pokemon } from '@features/pokemon/domain/entities/Pokemon';
@@ -42,6 +44,19 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
     loadMore();
   }, [loadMore]);
 
+  useEffect(() => {
+    const onChange = (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        refresh({ silent: true });
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', onChange);
+    return () => {
+      subscription.remove();
+    };
+  }, [refresh]);
+
   if (state.status === 'loading') {
     return <LoadingState message="Loading Pokémon" />;
   }
@@ -75,6 +90,7 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
             { color: colors.cacheText, backgroundColor: colors.cacheBg },
           ]}
           accessibilityRole="text"
+          accessibilityLiveRegion="polite"
         >
           Showing saved data
         </Text>
@@ -90,11 +106,14 @@ export function PokemonListScreen({ getPokemonList, onSelectPokemon }: Props) {
         }
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
+        accessibilityRole="list"
+        accessibilityLabel="Pokémon list"
         refreshControl={
           <RefreshControl
             refreshing={state.status === 'refreshing'}
             onRefresh={refresh}
             tintColor={colors.accent}
+            accessibilityLabel="Reload Pokémon"
           />
         }
         contentContainerStyle={styles.list}

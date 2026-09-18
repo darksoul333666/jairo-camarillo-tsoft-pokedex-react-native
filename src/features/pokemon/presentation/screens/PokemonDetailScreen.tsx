@@ -65,6 +65,7 @@ export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
             styles.cacheNotice,
             { color: colors.cacheText, backgroundColor: colors.cacheBg },
           ]}
+          accessibilityLiveRegion="polite"
         >
           Showing saved data
         </Text>
@@ -74,6 +75,7 @@ export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
           source={{ uri: pokemon.imageUrl }}
           style={styles.image}
           accessibilityLabel={`${name} artwork`}
+          accessibilityIgnoresInvertColors
         />
         <Text style={[styles.id, { color: colors.muted }]}>#{pokemon.id}</Text>
         <Text
@@ -168,9 +170,17 @@ function InfoRow({
   colors: AppColors;
 }) {
   return (
-    <View style={styles.row}>
-      <Text style={[styles.label, { color: colors.muted }]}>{label}</Text>
-      <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
+    <View
+      style={styles.row}
+      accessible
+      accessibilityLabel={`${label}, ${value}`}
+    >
+      <Text style={[styles.label, { color: colors.muted }]} accessible={false}>
+        {label}
+      </Text>
+      <Text style={[styles.value, { color: colors.text }]} accessible={false}>
+        {value}
+      </Text>
     </View>
   );
 }

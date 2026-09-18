@@ -44,8 +44,14 @@ function Probe({ getPokemonList }: { getPokemonList: GetPokemonList }) {
       <Pressable testID="loadMore" onPress={loadMore}>
         <Text>more</Text>
       </Pressable>
-      <Pressable testID="refresh" onPress={refresh}>
+      <Pressable testID="refresh" onPress={() => refresh()}>
         <Text>refresh</Text>
+      </Pressable>
+      <Pressable
+        testID="silentRefresh"
+        onPress={() => refresh({ silent: true })}
+      >
+        <Text>silent</Text>
       </Pressable>
     </>
   );
@@ -216,6 +222,48 @@ describe('usePokemonListViewModel', () => {
 
     await ReactTestRenderer.act(async () => {
       renderer?.root.findByProps({ testID: 'refresh' }).props.onPress();
+    });
+
+    expect(getPokemonList.execute).toHaveBeenNthCalledWith(2, 0, 20);
+    expect(
+      renderer?.root.findByProps({ testID: 'status' }).props.children,
+    ).toBe('success');
+    expect(renderer?.root.findByProps({ testID: 'count' }).props.children).toBe(
+      '1',
+    );
+  });
+
+  it('reloads in the background without a refreshing spinner', async () => {
+    let resolveSilent: ((value: unknown) => void) | undefined;
+    const getPokemonList = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce(page([bulbasaur], true))
+        .mockImplementationOnce(
+          () =>
+            new Promise(resolve => {
+              resolveSilent = resolve;
+            }),
+        ),
+    } as unknown as GetPokemonList;
+
+    let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <Probe getPokemonList={getPokemonList} />,
+      );
+    });
+
+    await ReactTestRenderer.act(async () => {
+      renderer?.root.findByProps({ testID: 'silentRefresh' }).props.onPress();
+    });
+
+    expect(
+      renderer?.root.findByProps({ testID: 'status' }).props.children,
+    ).toBe('success');
+
+    await ReactTestRenderer.act(async () => {
+      resolveSilent?.(page([ivysaur], false));
     });
 
     expect(getPokemonList.execute).toHaveBeenNthCalledWith(2, 0, 20);

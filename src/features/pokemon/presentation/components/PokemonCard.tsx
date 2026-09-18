@@ -23,13 +23,15 @@ function PokemonListCard({ pokemon, onPress }: Props) {
       ]}
       accessibilityRole="button"
       accessibilityLabel={`${name}, Pokémon number ${pokemon.id}`}
+      accessibilityHint="Shows details"
     >
       <Image
         source={{ uri: pokemon.imageUrl }}
         style={styles.image}
+        accessible={false}
         accessibilityIgnoresInvertColors
       />
-      <View style={styles.copy}>
+      <View style={styles.copy} accessible={false}>
         <Text style={[styles.id, { color: colors.muted }]}>#{pokemon.id}</Text>
         <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
       </View>

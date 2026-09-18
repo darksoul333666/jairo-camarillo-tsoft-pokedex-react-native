@@ -28,8 +28,12 @@ export function FeedbackState({ title, message, onRetry }: Props) {
         ]}
         accessibilityRole="button"
         accessibilityLabel="Retry"
+        accessibilityHint="Loads Pokémon again"
       >
-        <Text style={[styles.buttonLabel, { color: colors.onAccent }]}>
+        <Text
+          style={[styles.buttonLabel, { color: colors.onAccent }]}
+          accessible={false}
+        >
           Retry
         </Text>
       </Pressable>
