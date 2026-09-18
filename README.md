@@ -58,12 +58,22 @@ Lo mismo corre en GitHub Actions contra `development` y `main`.
 
 ## Capturas
 
-Pixel 9a. Lista, detalle y sin red (banner + cache + retry). En iOS es el mismo JS; el nativo está en `ios/` (workspace, scheme, lock).
+iPhone y Pixel 9a. Lista, detalle y sin red (banner + cache + retry).
+
+iOS:
 
 <p>
-  <img src="docs/screenshots/android-list.png" width="250" alt="Lista de Pokémon" />
-  <img src="docs/screenshots/android-detail.png" width="250" alt="Detalle de Ivysaur" />
-  <img src="docs/screenshots/android-offline.png" width="250" alt="Lista offline con cache" />
+  <img src="docs/screenshots/ios-list.jpg" width="250" alt="Lista de Pokémon en iOS" />
+  <img src="docs/screenshots/ios-detail.jpg" width="250" alt="Detalle de Ivysaur en iOS" />
+  <img src="docs/screenshots/ios-offline.jpg" width="250" alt="Lista offline en iOS" />
+</p>
+
+Android:
+
+<p>
+  <img src="docs/screenshots/android-list.png" width="250" alt="Lista de Pokémon en Android" />
+  <img src="docs/screenshots/android-detail.png" width="250" alt="Detalle de Ivysaur en Android" />
+  <img src="docs/screenshots/android-offline.png" width="250" alt="Lista offline en Android" />
 </p>
 
 ## App
