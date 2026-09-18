@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { GetPokemonDetail } from '@features/pokemon/domain/useCases/GetPokemonDetail';
-import { ErrorState } from '@features/pokemon/presentation/components/ErrorState';
+import { FeedbackState } from '@features/pokemon/presentation/components/FeedbackState';
 import { LoadingState } from '@features/pokemon/presentation/components/LoadingState';
 import {
   formatMeasurement,
@@ -26,11 +26,23 @@ export function PokemonDetailScreen({ pokemonId, getPokemonDetail }: Props) {
   }
 
   if (state.status === 'error') {
-    return <ErrorState message={state.message} onRetry={retry} />;
+    return (
+      <FeedbackState
+        title="Could not load Pokémon"
+        message={state.message}
+        onRetry={retry}
+      />
+    );
   }
 
   if (state.status === 'empty') {
-    return <ErrorState message="Pokémon not found." onRetry={retry} />;
+    return (
+      <FeedbackState
+        title="Pokémon not found"
+        message="This Pokémon is not available right now."
+        onRetry={retry}
+      />
+    );
   }
 
   const pokemon = state.data;
