@@ -21,7 +21,7 @@ yarn ios
 yarn android
 ```
 
-Si el clone es fresco, rebuild nativo. Metro no alcanza: hay AsyncStorage y React Navigation.
+Si el clone es fresco, rebuild nativo. Metro no alcanza: hay AsyncStorage y React Navigation. En iOS abre `PokemonApp.xcworkspace`, no el `.xcodeproj`. El `Podfile.lock` va en el repo.
 
 ```bash
 yarn typecheck
