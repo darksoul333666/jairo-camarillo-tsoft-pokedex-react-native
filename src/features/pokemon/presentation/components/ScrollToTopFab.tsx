@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppColors } from '@features/pokemon/presentation/theme';
 
@@ -16,50 +16,59 @@ export function ScrollToTopFab({ visible, onPress }: Props) {
   }
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.fab,
-        {
-          backgroundColor: colors.accent,
-          bottom: Math.max(insets.bottom, 16) + 8,
-        },
-        pressed && styles.pressed,
-      ]}
-      accessibilityRole="button"
-      accessibilityLabel="Scroll to top"
+    <View
+      pointerEvents="box-none"
+      style={[styles.layer, { bottom: Math.max(insets.bottom, 12) + 8 }]}
     >
-      <Text
-        style={[styles.icon, { color: colors.onAccent }]}
-        accessible={false}
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.fab,
+          { backgroundColor: colors.accent },
+          pressed && styles.pressed,
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel="Scroll to top"
       >
-        ↑
-      </Text>
-    </Pressable>
+        <View
+          accessible={false}
+          style={[styles.chevron, { borderColor: colors.onAccent }]}
+        />
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
+  layer: {
     position: 'absolute',
-    right: 16,
-    minWidth: 48,
-    minHeight: 48,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 20,
+    elevation: 20,
+  },
+  fab: {
+    width: 48,
+    height: 48,
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 6,
     shadowColor: '#000000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.22,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
   },
   pressed: {
     opacity: 0.85,
   },
-  icon: {
-    fontSize: 22,
-    fontWeight: '700',
-    lineHeight: 26,
+  chevron: {
+    width: 12,
+    height: 12,
+    marginTop: 3,
+    borderTopWidth: 2.5,
+    borderLeftWidth: 2.5,
+    transform: [{ rotate: '45deg' }],
   },
 });
