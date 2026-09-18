@@ -20,7 +20,7 @@ minSdk 24. `applicationId` `com.pokemonapp`.
 yarn android
 ```
 
-Si el clone es fresco, rebuild nativo. Metro no alcanza: hay AsyncStorage y React Navigation. En iOS abre `PokemonApp.xcworkspace`, no el `.xcodeproj`. El `Podfile.lock` va en el repo.
+Si el repo está limpio, rebuild nativo. Metro no es suficiente: hay AsyncStorage y React Navigation.
 
 ### iOS
 
@@ -78,6 +78,8 @@ Pull to refresh en lista y detalle. En la lista, si ya hay datos y se pierde la 
 
 ## Icono
 
+<img src="assets/app-icon.png" width="96" alt="Icono de Pokedex" />
+
 iOS (AppIcon) y Android (mipmap square + round) salen de `assets/app-icon.png`:
 
 ```bash
@@ -101,7 +103,7 @@ src/features/pokemon
 
 React Navigation (y sus peers: `screens`, `gesture-handler`, `safe-area-context`) porque RN no trae stack. AsyncStorage porque tampoco trae storage.
 
-No metí Axios ni Redux. Con `fetch` y el estado del ViewModel alcanza.
+No metí Axios ni Redux. Con `fetch` y el estado del ViewModel fue suficiente.
 
 ## Cache e imágenes
 
